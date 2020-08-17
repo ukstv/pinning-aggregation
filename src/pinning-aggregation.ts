@@ -17,22 +17,28 @@ export class UnknownPinningService extends Error {
 export class PinningAggregation implements IPinning {
   readonly backends: IPinning[];
 
-  constructor(
+  static async build(
     context: IContext,
     connectionStrings: string[],
     pinners: Array<IPinningStatic> = [IpfsPinning, PowergatePinning]
   ) {
-    this.backends = connectionStrings.map((s) => {
+    const backendsP = connectionStrings.map((s) => {
       const protocol = new URL(s).protocol.replace(":", "");
       const match = protocol.match(/^(\w+)\+?/);
       const designator = match ? match[1] : null;
       const found = pinners.find((pinner) => pinner.designator === designator);
       if (found) {
-        return new found(s, context);
+        return found.build(s, context);
       } else {
         throw new UnknownPinningService(designator);
       }
     });
+    const backends = await Promise.all(backendsP);
+    return new PinningAggregation(backends);
+  }
+
+  constructor(backends: IPinning[]) {
+    this.backends = backends;
   }
 
   /**

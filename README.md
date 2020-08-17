@@ -58,6 +58,7 @@ Every pinning backend is assigned a unique string that we call _designator_ belo
 For the examples above, designator searched is `ipfs`. Rest of the connection string is parsed by particular backend.
 
 **IPFS.** Connection string looks like `ipfs://<host>:<port>` or `ipfs+http://<host>:<port>` or `ipfs+https://<host>:<port>`. It is translated into `http://<host>:<port>`, `http://<host>:<port>`, `https://<host>:<port>` correspondingly.
+Here there is a special hostname `__context` used, which commands the pinning backend to use IPFS connection provided in `IContext`.
 
 **Powergate.** Powergate requires token for authentication purposes. We pass it as a query param. Connection string looks like `powergate://<host>:<port>?token=<token>`, `powergate+http://<host>:<port>?token=<token>` or `powergate+https://<host>:<port>?token=<token>`. It is translated into `http://<host>:<port>`, `http://<host>:<port>`, `https://<host>:<port>` correspondingly, and set the token passed.
 
@@ -72,15 +73,31 @@ npm add pinning-aggregation
 Then instantiate `PinningAggregation`. We anticipate some applications already having IPFS connection, so we provide it in a context parameter.
 
 ```typescript
-import { PinningAggregation } from "pinning-aggregation";
+import {
+  PinningAggregation,
+  IpfsPinning,
+  PowergatePinning,
+} from "pinning-aggregation";
 const context = {
   ipfs: EXISTING_IPFS_CONNECTION, // May be null or undefined
 };
-const pinning = new PinningAggregation(context, [
+const pinning = await PinningAggregation.build(context, [
+  "ipfs://__context",
   "ipfs+https://example.com:3342",
-  "powergate+http://example.com:4001",
+  "powergate+http://example.com:4001?token=something-special",
+  [IpfsPinning, PowergatePinning],
 ]);
 await pinning.open(); // Must call open before doing anything
 await pinning.pin(new CID("QmSnuWmxptJZdLJpKRarxBMS2Ju2oANVrgbr2xWbie9b2D"));
 await pinning.close(); // Must call on application shutdown
 ```
+
+This would use 3 pinning instances:
+
+- vanilla IPFS provided in `context` variable,
+- vanilla IPFS located at `https://example.com:3342`,
+- Powergate located at `http://example.com:4001`, with authentication token `something-special`.
+
+The module uses dynamic imports (`await import`) to reduce size of a resulting application bundle.
+So, if you are going to use remote ipfs, make sure to add `ipfs-http-client` as a dependency _to your application_.
+If you are going to use Powergate pinning, add `@textile/powergate-client` as well.

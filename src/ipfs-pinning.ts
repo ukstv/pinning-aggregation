@@ -1,5 +1,4 @@
 import { IPinning } from "./pinning.interface";
-import ipfsClient from "ipfs-http-client";
 import { Ipfs } from "ipfs";
 import { IContext } from "./context.interface";
 import CID from "cids";
@@ -29,6 +28,13 @@ export class IpfsPinning implements IPinning {
   readonly #context: IContext;
   #ipfs: Ipfs | undefined;
 
+  static async build(
+    connectionString: string,
+    context: IContext
+  ): Promise<IpfsPinning> {
+    return new IpfsPinning(connectionString, context);
+  }
+
   constructor(connectionString: string, context: IContext) {
     const url = new URL(connectionString);
     const ipfsHost = url.hostname;
@@ -57,6 +63,8 @@ export class IpfsPinning implements IPinning {
         throw new NoIpfsInstanceError();
       }
     } else {
+      const ipfsClientImport = await import("ipfs-http-client");
+      const ipfsClient = ipfsClientImport.default;
       this.#ipfs = ipfsClient(this.ipfsAddress);
     }
   }

@@ -51,34 +51,34 @@ beforeEach(() => {
 
 describe("constructor", () => {
   test("set Powergate endpoint from powergate:// URL", () => {
-    const pinning = new PowergatePinning(connectionString);
+    const pinning = new PowergatePinning(connectionString, pow);
     expect(pinning.endpoint).toEqual("http://example.com:5002");
     expect(pinning.token).toEqual(token);
   });
   test("set Powergate endpoint from powergate+http:// URL", () => {
     const pinning = new PowergatePinning(
-      `powergate+http://example.com:3004?token=${token}`
+      `powergate+http://example.com:3004?token=${token}`, pow
     );
     expect(pinning.endpoint).toEqual("http://example.com:3004");
     expect(pinning.token).toEqual(token);
   });
   test("set Powergate endpoint from powergate+https:// URL", () => {
     const pinning = new PowergatePinning(
-      `powergate+https://example.com?token=${token}`
+      `powergate+https://example.com?token=${token}`, pow
     );
     expect(pinning.endpoint).toEqual("https://example.com:5002");
     expect(pinning.token).toEqual(token);
   });
   test("require token", () => {
     expect(() => {
-      new PowergatePinning(`powergate+https://example.com`);
+      new PowergatePinning(`powergate+https://example.com`, pow);
     }).toThrow(EmptyTokenError);
   });
 });
 
 test("#open", async () => {
   jest.spyOn<any, any>(pow, "createPow").mockImplementation(() => mockPow);
-  const pinning = new PowergatePinning(connectionString);
+  const pinning = new PowergatePinning(connectionString, pow);
   expect(pinning.pow).toBeUndefined();
   await pinning.open();
   expect(pow.createPow).toBeCalledWith({ host: pinning.endpoint });
@@ -88,7 +88,7 @@ test("#open", async () => {
 
 describe("#pin", () => {
   test("pin record", async () => {
-    const pinning = new PowergatePinning(connectionString);
+    const pinning = new PowergatePinning(connectionString, pow);
     await pinning.open();
     const cid = new CID("QmSnuWmxptJZdLJpKRarxBMS2Ju2oANVrgbr2xWbie9b2D");
     await pinning.pin(cid);
@@ -100,7 +100,7 @@ describe("#pin", () => {
   });
 
   test("tolerate double pinning as idempotent call", async () => {
-    const pinning = new PowergatePinning(connectionString);
+    const pinning = new PowergatePinning(connectionString, pow);
     await pinning.open();
     const cid = new CID("QmSnuWmxptJZdLJpKRarxBMS2Ju2oANVrgbr2xWbie9b2D");
     mockPow.ffs.pushStorageConfig = jest.fn(() => {
@@ -119,7 +119,7 @@ describe("#pin", () => {
     jest
       .spyOn<any, any>(pow.ffsOptions, "withStorageConfig")
       .mockImplementation((any) => any);
-    const pinning = new PowergatePinning(connectionString);
+    const pinning = new PowergatePinning(connectionString, pow);
     await pinning.open();
     const cid = new CID("QmSnuWmxptJZdLJpKRarxBMS2Ju2oANVrgbr2xWbie9b2D");
     mockPow.ffs.pushStorageConfig = jest.fn(() => {
@@ -136,14 +136,14 @@ describe("#pin", () => {
 
 describe("#unpin", () => {
   test("remove from pin set", async () => {
-    const pinning = new PowergatePinning(connectionString);
+    const pinning = new PowergatePinning(connectionString, pow);
     await pinning.open();
     const cid = new CID("QmSnuWmxptJZdLJpKRarxBMS2Ju2oANVrgbr2xWbie9b2D");
     await pinning.unpin(cid);
     expect(mockPow.ffs.remove).toBeCalledWith(cid.toString());
   });
   test("throw if job error", async () => {
-    const pinning = new PowergatePinning(connectionString);
+    const pinning = new PowergatePinning(connectionString, pow);
     await pinning.open();
     mockPow.ffs.watchJobs = jest.fn((callback: any) => {
       callback({
@@ -156,7 +156,7 @@ describe("#unpin", () => {
     expect(mockPow.ffs.remove).not.toBeCalled();
   });
   test("throw if job cancelled", async () => {
-    const pinning = new PowergatePinning(connectionString);
+    const pinning = new PowergatePinning(connectionString, pow);
     await pinning.open();
     mockPow.ffs.watchJobs = jest.fn((callback: any) => {
       callback({
@@ -169,7 +169,7 @@ describe("#unpin", () => {
     expect(mockPow.ffs.remove).not.toBeCalled();
   });
   test("throw if job failed", async () => {
-    const pinning = new PowergatePinning(connectionString);
+    const pinning = new PowergatePinning(connectionString, pow);
     await pinning.open();
     mockPow.ffs.watchJobs = jest.fn((callback: any) => {
       callback({

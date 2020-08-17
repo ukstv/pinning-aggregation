@@ -19,6 +19,10 @@ const doubleFakeConnectionStrings = ["fake://alpha.com", "fake://beta.com"];
 class FakePinning implements IPinning {
   static designator = "fake";
 
+  static async build(): Promise<FakePinning> {
+    return new FakePinning();
+  }
+
   async close(): Promise<void> {
     // Do Nothing
   }
@@ -44,7 +48,10 @@ describe("constructor", () => {
       `powergate://localhost:5002?token=${token}`,
       `powergate+https://example.com?token=${token}`,
     ];
-    const aggregation = new PinningAggregation(context, connectionStrings);
+    const aggregation = await PinningAggregation.build(
+      context,
+      connectionStrings
+    );
     expect(aggregation.backends.length).toEqual(4);
 
     expect(aggregation.backends[0]).toBeInstanceOf(IpfsPinning);
@@ -68,22 +75,22 @@ describe("constructor", () => {
 
   test("unknown designator", async () => {
     const connectionStrings = ["foo://localhost:5001"];
-    expect(() => {
-      new PinningAggregation(context, connectionStrings);
-    }).toThrow(UnknownPinningService);
+    await expect(
+      PinningAggregation.build(context, connectionStrings)
+    ).rejects.toThrow(UnknownPinningService);
   });
 
   test("mangled designator", async () => {
     const connectionStrings = ["foo+ipfs://example.com"];
-    expect(() => {
-      new PinningAggregation(context, connectionStrings);
-    }).toThrow(UnknownPinningService);
+    await expect(
+      PinningAggregation.build(context, connectionStrings)
+    ).rejects.toThrow(UnknownPinningService);
   });
 });
 
 describe("#open", () => {
   test("call all backends", async () => {
-    const aggregation = new PinningAggregation(
+    const aggregation = await PinningAggregation.build(
       context,
       doubleFakeConnectionStrings,
       [FakePinning]
@@ -99,7 +106,7 @@ describe("#open", () => {
   });
 
   test("throw if backend fails", async () => {
-    const aggregation = new PinningAggregation(
+    const aggregation = await PinningAggregation.build(
       context,
       doubleFakeConnectionStrings,
       [FakePinning]
@@ -114,7 +121,7 @@ describe("#open", () => {
 
 describe("#close", () => {
   test("call all backends", async () => {
-    const aggregation = new PinningAggregation(
+    const aggregation = await PinningAggregation.build(
       context,
       doubleFakeConnectionStrings,
       [FakePinning]
@@ -130,7 +137,7 @@ describe("#close", () => {
   });
 
   test("throw if backend fails", async () => {
-    const aggregation = new PinningAggregation(
+    const aggregation = await PinningAggregation.build(
       context,
       doubleFakeConnectionStrings,
       [FakePinning]
@@ -145,7 +152,7 @@ describe("#close", () => {
 
 describe("#pin", () => {
   test("call all backends", async () => {
-    const aggregation = new PinningAggregation(
+    const aggregation = await PinningAggregation.build(
       context,
       doubleFakeConnectionStrings,
       [FakePinning]
@@ -161,7 +168,7 @@ describe("#pin", () => {
   });
 
   test("throw if backend fails", async () => {
-    const aggregation = new PinningAggregation(
+    const aggregation = await PinningAggregation.build(
       context,
       doubleFakeConnectionStrings,
       [FakePinning]
@@ -176,7 +183,7 @@ describe("#pin", () => {
 
 describe("#unpin", () => {
   test("call all backends", async () => {
-    const aggregation = new PinningAggregation(
+    const aggregation = await PinningAggregation.build(
       context,
       doubleFakeConnectionStrings,
       [FakePinning]
@@ -192,7 +199,7 @@ describe("#unpin", () => {
   });
 
   test("resolve if backend fails", async () => {
-    const aggregation = new PinningAggregation(
+    const aggregation = await PinningAggregation.build(
       context,
       doubleFakeConnectionStrings,
       [FakePinning]

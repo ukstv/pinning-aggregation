@@ -10,5 +10,5 @@ export interface IPinning {
 
 export interface IPinningStatic {
   designator: string;
-  new (connectionString: string, context: IContext): IPinning;
+  build (connectionString: string, context: IContext): Promise<IPinning>;
 }

@@ -1,4 +1,4 @@
-import { createPow, ffsOptions, ffsTypes } from "@textile/powergate-client";
+import type { ffsTypes } from "@textile/powergate-client";
 import CID from "cids";
 import { IPinning } from "./pinning.interface";
 
@@ -23,9 +23,19 @@ export class PowergatePinning implements IPinning {
   readonly endpoint: string;
   readonly token: string;
 
+  #textile: typeof import("@textile/powergate-client");
   #pow: any;
 
-  constructor(connectionString: string) {
+  static async build(connectionString: string): Promise<PowergatePinning> {
+    const textile = await import("@textile/powergate-client");
+    return new PowergatePinning(connectionString, textile);
+  }
+
+  constructor(
+    connectionString: string,
+    textlile: typeof import("@textile/powergate-client")
+  ) {
+    this.#textile = textlile;
     const url = new URL(connectionString);
     const hostname = url.hostname;
     const port = parseInt(url.port, 10) || 5002;
@@ -46,7 +56,7 @@ export class PowergatePinning implements IPinning {
   }
 
   async open(): Promise<void> {
-    this.#pow = createPow({ host: this.endpoint });
+    this.#pow = this.#textile.createPow({ host: this.endpoint });
     this.#pow.setToken(this.token);
   }
 
@@ -59,7 +69,7 @@ export class PowergatePinning implements IPinning {
       const defaultConfig = await this.#pow.ffs.defaultStorageConfig();
       await this.#pow.ffs.pushStorageConfig(
         cid.toString(),
-        ffsOptions.withStorageConfig(defaultConfig)
+        this.#textile.ffsOptions.withStorageConfig(defaultConfig)
       );
     } catch (e) {
       if (
@@ -90,8 +100,8 @@ export class PowergatePinning implements IPinning {
       },
     });
     const opts = [
-      ffsOptions.withOverride(true),
-      ffsOptions.withStorageConfig(next),
+      this.#textile.ffsOptions.withOverride(true),
+      this.#textile.ffsOptions.withStorageConfig(next),
     ];
     const { jobId } = await this.#pow.ffs.pushStorageConfig(
       cid.toString(),
