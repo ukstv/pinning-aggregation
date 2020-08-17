@@ -1,0 +1,39 @@
+{
+  "name": "pinning-aggregation",
+  "version": "1.0.0",
+  "description": "Use multiple pinning services like they are one",
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "files": [
+    "lib/"
+  ],
+  "scripts": {
+    "test": "jest",
+    "clean": "rm -rf lib/ && rm -rf coverage/",
+    "build": "./node_modules/.bin/tsc -p ."
+  },
+  "author": "Sergey Ukustov <sergey@ukstv.me>",
+  "license": "Apache-2.0",
+  "engines": {
+    "node": ">=12",
+    "pnpm": ">=5.4"
+  },
+  "devDependencies": {
+    "@textile/powergate-client": "^0.2.0",
+    "@types/jest": "^26.0.10",
+    "@types/lodash": "^4.14.159",
+    "ipfs-http-client": "^46.0.0",
+    "jest": "^26.4.0",
+    "prettier": "^2.0.5",
+    "ts-jest": "^26.2.0",
+    "typescript": "^3.9.7"
+  },
+  "peerDependencies": {
+    "@textile/powergate-client": "^1.0.0",
+    "ipfs-http-client": "^46.0.0"
+  },
+  "dependencies": {
+    "cids": "^1.0.0",
+    "lodash": "^4.17.20"
+  }
+}
