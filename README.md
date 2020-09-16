@@ -150,3 +150,10 @@ An aggregation that contains single Powergate backend would output like below:
 
 Here `powergate@wRVpk643xlIc86w608VW7JvXeezzoDG1dLqEtGNHoYo=` is a unique backend id,
 that is constructed as `designator@base64url(sha256(connectionString))`.
+
+## License
+
+This work is dual-licensed under Apache 2.0 and MIT.
+You can choose between one of them if you use this work.
+
+`SPDX-License-Identifier: Apache-2.0 OR MIT`
