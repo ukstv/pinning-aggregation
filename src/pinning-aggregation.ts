@@ -5,6 +5,8 @@ import CID from "cids";
 import { IPinning, IPinningStatic } from "./pinning.interface";
 import { IContext } from "./context.interface";
 import {CidList} from "./cid-list";
+import * as base64 from "@stablelib/base64";
+import * as sha256 from "@stablelib/sha256";
 
 export class UnknownPinningService extends Error {
   constructor(designator: string | null) {
@@ -12,10 +14,13 @@ export class UnknownPinningService extends Error {
   }
 }
 
+const textEncoder = new TextEncoder();
+
 /**
  * Multitude of pinning services united.
  */
 export class PinningAggregation implements IPinning {
+  readonly id: string;
   readonly backends: IPinning[];
 
   static async build(
@@ -40,6 +45,11 @@ export class PinningAggregation implements IPinning {
 
   constructor(backends: IPinning[]) {
     this.backends = backends;
+
+    const allIds = this.backends.map(b => b.id).join('\n')
+    const bytes = textEncoder.encode(allIds);
+    const digest = base64.encodeURLSafe(sha256.hash(bytes));
+    this.id = `pinning-aggregation@${digest}`;
   }
 
   /**

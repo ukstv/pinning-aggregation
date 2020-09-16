@@ -3,6 +3,7 @@ import { IContext } from "./context.interface";
 import { CidList } from "./cid-list";
 
 export interface IPinning {
+  id: string;
   open(): Promise<void>;
   close(): Promise<void>;
   pin(cid: CID): Promise<void>;

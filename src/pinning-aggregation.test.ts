@@ -20,6 +20,8 @@ const doubleFakeConnectionStrings = ["fake://alpha.com", "fake://beta.com"];
 class FakePinning implements IPinning {
   static designator = "fake";
 
+  readonly id = `fake@${this.connectionString}`;
+
   static async build(connectionString: string): Promise<FakePinning> {
     return new FakePinning(connectionString);
   }
@@ -228,7 +230,16 @@ describe("#ls", () => {
       doubleFakeConnectionStrings,
       [FakePinning]
     );
-    const result = await aggregation.ls()
-    expect(result[cid.toString()]).toEqual(doubleFakeConnectionStrings)
+    const result = await aggregation.ls();
+    expect(result[cid.toString()]).toEqual(doubleFakeConnectionStrings);
   });
+});
+
+test("#id", async () => {
+  const aggregation = await PinningAggregation.build(
+    context,
+    doubleFakeConnectionStrings,
+    [FakePinning]
+  );
+  expect(aggregation.id).toEqual("pinning-aggregation@MrsSJQiu_jyU4eUHlnStwE1_xiyF7aEz8OljvySd4Tk=");
 });
