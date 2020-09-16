@@ -4,6 +4,7 @@ import { PowergatePinning } from "./powergate-pinning";
 import CID from "cids";
 import { IPinning, IPinningStatic } from "./pinning.interface";
 import { IContext } from "./context.interface";
+import {CidList} from "./cid-list";
 
 export class UnknownPinningService extends Error {
   constructor(designator: string | null) {
@@ -74,5 +75,18 @@ export class PinningAggregation implements IPinning {
     Promise.all(this.backends.map(async (service) => service.unpin(cid))).catch(
       _.noop
     );
+  }
+
+  /**
+   * List pinned CIDs.
+   */
+  async ls(): Promise<CidList> {
+    const perBackend = await Promise.all(this.backends.map(b => b.ls()))
+    const allCids = _.uniq(_.flatMap(perBackend, p => _.keys(p)))
+    let result: CidList = {}
+    allCids.forEach(cid => {
+      result[cid] = _.compact(_.flatMap(perBackend, p => p[cid]))
+    })
+    return result
   }
 }

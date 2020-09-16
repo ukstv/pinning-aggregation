@@ -7,6 +7,7 @@ import { PowergatePinning } from "./powergate-pinning";
 import { IPinning } from "./pinning.interface";
 import CID from "cids";
 import { IContext } from "./context.interface";
+import { CidList } from "./cid-list";
 const cid = new CID("QmSnuWmxptJZdLJpKRarxBMS2Ju2oANVrgbr2xWbie9b2D");
 
 const context = ({
@@ -19,9 +20,11 @@ const doubleFakeConnectionStrings = ["fake://alpha.com", "fake://beta.com"];
 class FakePinning implements IPinning {
   static designator = "fake";
 
-  static async build(): Promise<FakePinning> {
-    return new FakePinning();
+  static async build(connectionString: string): Promise<FakePinning> {
+    return new FakePinning(connectionString);
   }
+
+  constructor(readonly connectionString: string) {}
 
   async close(): Promise<void> {
     // Do Nothing
@@ -37,6 +40,12 @@ class FakePinning implements IPinning {
 
   async unpin(): Promise<void> {
     // Do Nothing
+  }
+
+  async ls(): Promise<CidList> {
+    return {
+      [cid.toString()]: [this.connectionString],
+    };
   }
 }
 
@@ -209,5 +218,17 @@ describe("#unpin", () => {
     });
     aggregation.backends[1].unpin = jest.fn();
     await expect(aggregation.unpin(cid)).resolves.toBeUndefined();
+  });
+});
+
+describe("#ls", () => {
+  test("merge backend designators", async () => {
+    const aggregation = await PinningAggregation.build(
+      context,
+      doubleFakeConnectionStrings,
+      [FakePinning]
+    );
+    const result = await aggregation.ls()
+    expect(result[cid.toString()]).toEqual(doubleFakeConnectionStrings)
   });
 });

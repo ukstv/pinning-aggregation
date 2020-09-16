@@ -2,6 +2,7 @@ import ipfsClient from "ipfs-http-client";
 import CID from "cids";
 import { IpfsPinning, NoIpfsInstanceError } from "./ipfs-pinning";
 import { IContext } from "./context.interface";
+import { asyncIterableFromArray } from "./async-iterable-from-array.util";
 
 jest.mock("ipfs-http-client");
 
@@ -100,5 +101,37 @@ describe("#unpin", () => {
     const pinning = new IpfsPinning("ipfs://__context", context);
     const cid = new CID("QmSnuWmxptJZdLJpKRarxBMS2Ju2oANVrgbr2xWbie9b2D");
     await expect(pinning.unpin(cid)).resolves.toBeUndefined();
+  });
+});
+
+describe("#ls", () => {
+  test("return list of cids pinned", async () => {
+    const cids = [
+      new CID("QmSnuWmxptJZdLJpKRarxBMS2Ju2oANVrgbr2xWbie9b2D"),
+      new CID("QmWXShtJXt6Mw3FH7hVCQvR56xPcaEtSj4YFSGjp2QxA4v"),
+    ];
+    const lsResult = cids.map((cid) => ({ cid: cid, type: "direct" }));
+    const ls = jest.fn(() => asyncIterableFromArray(lsResult));
+    const context = ({
+      ipfs: {
+        pin: {
+          ls: ls,
+        },
+      },
+    } as unknown) as IContext;
+    const pinning = new IpfsPinning("ipfs://__context", context);
+    await pinning.open();
+    const result = await pinning.ls();
+    cids.forEach((cid) => {
+      expect(result[cid.toString()]).toEqual([IpfsPinning.designator]);
+    });
+  });
+
+  test("return empty array if no ipfs", async () => {
+    const context = ({
+    } as unknown) as IContext;
+    const pinning = new IpfsPinning("ipfs://__context", context);
+    const result = await pinning.ls();
+    expect(result).toEqual({})
   });
 });

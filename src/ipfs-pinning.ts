@@ -2,6 +2,7 @@ import { IPinning } from "./pinning.interface";
 import { Ipfs } from "ipfs";
 import { IContext } from "./context.interface";
 import CID from "cids";
+import { CidList } from "./cid-list";
 
 const FROM_CONTEXT_HOST = "__context";
 
@@ -79,5 +80,18 @@ export class IpfsPinning implements IPinning {
 
   async unpin(cid: CID): Promise<void> {
     await this.#ipfs?.pin.rm(cid);
+  }
+
+  async ls(): Promise<CidList> {
+    const iterable = this.#ipfs?.pin.ls();
+    if (iterable) {
+      let result: CidList = {}
+      for await (let r of iterable) {
+        result[r.cid.toString()] = [IpfsPinning.designator]
+      }
+      return result
+    } else {
+      return {}
+    }
   }
 }

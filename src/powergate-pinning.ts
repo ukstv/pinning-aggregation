@@ -1,6 +1,7 @@
 import type { ffsTypes, Pow } from "@textile/powergate-client";
 import CID from "cids";
 import { IPinning } from "./pinning.interface";
+import { CidList } from "./cid-list";
 
 export class EmptyTokenError extends Error {
   constructor(address: string) {
@@ -67,7 +68,9 @@ export class PowergatePinning implements IPinning {
   async pin(cid: CID): Promise<void> {
     if (this.#pow) {
       try {
-        await this.#pow.ffs.pushStorageConfig(cid.toString(), { override: true });
+        await this.#pow.ffs.pushStorageConfig(cid.toString(), {
+          override: true,
+        });
       } catch (e) {
         if (
           e.message.includes("cid already pinned, consider using override flag")
@@ -97,10 +100,13 @@ export class PowergatePinning implements IPinning {
             enabled: false,
           },
         });
-        const { jobId } = await this.#pow.ffs.pushStorageConfig(cid.toString(), {
-          override: true,
-          storageConfig: next,
-        });
+        const { jobId } = await this.#pow.ffs.pushStorageConfig(
+          cid.toString(),
+          {
+            override: true,
+            storageConfig: next,
+          }
+        );
         await this.waitForJobStatus(jobId, JobStatus.JOB_STATUS_SUCCESS);
         await this.#pow.ffs.remove(cid.toString());
       }
@@ -112,7 +118,7 @@ export class PowergatePinning implements IPinning {
     status: ffsTypes.JobStatusMap[keyof ffsTypes.JobStatusMap]
   ): Promise<void> {
     if (this.#pow) {
-      const pow = this.#pow
+      const pow = this.#pow;
       return new Promise<void>((resolve, reject) => {
         const cancel = pow.ffs.watchJobs((job: any) => {
           if (job.errCause && job.errCause.length > 0) {
@@ -130,6 +136,24 @@ export class PowergatePinning implements IPinning {
           }
         }, jobId);
       });
+    }
+  }
+
+  async ls(): Promise<CidList> {
+    if (this.#pow) {
+      const { info } = await this.#pow.ffs.info();
+      if (info) {
+        const cids = info.pinsList;
+        let result: CidList = {};
+        cids.forEach((cid) => {
+          result[cid] = [PowergatePinning.designator];
+        });
+        return result;
+      } else {
+        return {};
+      }
+    } else {
+      return {};
     }
   }
 }
