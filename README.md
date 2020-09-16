@@ -101,3 +101,52 @@ This would use 3 pinning instances:
 The module uses dynamic imports (`await import`) to reduce size of a resulting application bundle.
 So, if you are going to use remote ipfs, make sure to add `ipfs-http-client` as a dependency _to your application_.
 If you are going to use Powergate pinning, add `@textile/powergate-client` as well.
+
+### Ancillary methods
+
+In addition to `pin` and `unpin` functionality, the package provides list of pins per backend (`#ls`) and backend info (`#info`).
+An aggregation that contains single Powergate backend would output like below:
+
+```
+{
+    "powergate@wRVpk643xlIc86w608VW7JvXeezzoDG1dLqEtGNHoYo=": {
+        "id": "321ff612-85a8-46c4-93b6-86e97964ce45",
+        "defaultStorageConfig": {
+            "hot": {
+                "enabled": true,
+                "allowUnfreeze": false
+            },
+            "cold": {
+                "enabled": true,
+                "filecoin": {
+                    "repFactor": 1,
+                    "dealMinDuration": 518400,
+                    "excludedMinersList": [],
+                    "trustedMinersList": [],
+                    "countryCodesList": [],
+                    "renew": {
+                        "enabled": false,
+                        "threshold": 0
+                    },
+                    "addr": "t3rndyswpparggro2ome2b2j4rrpkg3yh4gpfpe426vneangwooprjor44dbwti2omsd7vkcb2lt6fcwpdt6sq",
+                    "maxPrice": 0
+                }
+            },
+            "repairable": false
+        },
+        "balancesList": [
+            {
+                "addr": {
+                    "name": "Initial Address",
+                    "addr": "t3rndyswpparggro2ome2b2j4rrpkg3yh4gpfpe426vneangwooprjor44dbwti2omsd7vkcb2lt6fcwpdt6sq",
+                    "type": "bls"
+                },
+                "balance": 3999802806680231
+            }
+        ]
+    }
+}
+```
+
+Here `powergate@wRVpk643xlIc86w608VW7JvXeezzoDG1dLqEtGNHoYo=` is a unique backend id,
+that is constructed as `designator@base64url(sha256(connectionString))`.
