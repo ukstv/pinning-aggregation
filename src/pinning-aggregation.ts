@@ -2,9 +2,13 @@ import { IpfsPinning } from "./ipfs-pinning";
 import _ from "lodash";
 import { PowergatePinning } from "./powergate-pinning";
 import CID from "cids";
-import { IPinning, IPinningStatic } from "./pinning.interface";
+import {
+  CidList,
+  IPinning,
+  IPinningStatic,
+  PinningInfo,
+} from "./pinning.interface";
 import { IContext } from "./context.interface";
-import {CidList} from "./cid-list";
 import * as base64 from "@stablelib/base64";
 import * as sha256 from "@stablelib/sha256";
 
@@ -46,7 +50,7 @@ export class PinningAggregation implements IPinning {
   constructor(backends: IPinning[]) {
     this.backends = backends;
 
-    const allIds = this.backends.map(b => b.id).join('\n')
+    const allIds = this.backends.map((b) => b.id).join("\n");
     const bytes = textEncoder.encode(allIds);
     const digest = base64.encodeURLSafe(sha256.hash(bytes));
     this.id = `pinning-aggregation@${digest}`;
@@ -91,12 +95,17 @@ export class PinningAggregation implements IPinning {
    * List pinned CIDs.
    */
   async ls(): Promise<CidList> {
-    const perBackend = await Promise.all(this.backends.map(b => b.ls()))
-    const allCids = _.uniq(_.flatMap(perBackend, p => _.keys(p)))
-    let result: CidList = {}
-    allCids.forEach(cid => {
-      result[cid] = _.compact(_.flatMap(perBackend, p => p[cid]))
-    })
-    return result
+    const perBackend = await Promise.all(this.backends.map((b) => b.ls()));
+    const allCids = _.uniq(_.flatMap(perBackend, (p) => _.keys(p)));
+    let result: CidList = {};
+    allCids.forEach((cid) => {
+      result[cid] = _.compact(_.flatMap(perBackend, (p) => p[cid]));
+    });
+    return result;
+  }
+
+  async info(): Promise<PinningInfo> {
+    const perBackend = await Promise.all(this.backends.map((b) => b.info()));
+    return _.merge({}, ...perBackend);
   }
 }

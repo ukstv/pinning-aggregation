@@ -224,3 +224,49 @@ test("#id", async () => {
   const id = pinning.id;
   expect(id).toEqual("powergate@1jv3pY_D2aj8gdbDeg-GHSlIB1aBg1bGB0yQBpNYOaA=");
 });
+
+describe("#info", () => {
+  const cids = [
+    new CID("QmSnuWmxptJZdLJpKRarxBMS2Ju2oANVrgbr2xWbie9b2D"),
+    new CID("QmWXShtJXt6Mw3FH7hVCQvR56xPcaEtSj4YFSGjp2QxA4v"),
+  ];
+
+  test("return random info", async () => {
+    const pinning = new PowergatePinning(connectionString, pow);
+    await pinning.open();
+    mockPow.ffs.info = jest.fn(async () => {
+      return {
+        info: {
+          pinsList: cids.map((cid) => cid.toString()),
+          foo: "blah",
+        },
+      };
+    });
+    const result = await pinning.info();
+    expect(result).toEqual({
+      [pinning.id]: { foo: "blah" },
+    });
+  });
+
+  test("return empty if no pow", async () => {
+    const pinning = new PowergatePinning(connectionString, pow);
+    const result = await pinning.info();
+    expect(result).toEqual({
+      [pinning.id]: {},
+    });
+  });
+
+  test("return empty if no info", async () => {
+    const pinning = new PowergatePinning(connectionString, pow);
+    await pinning.open();
+    mockPow.ffs.info = jest.fn(async () => {
+      return {
+        info: null,
+      };
+    });
+    const result = await pinning.info();
+    expect(result).toEqual({
+      [pinning.id]: {},
+    });
+  });
+});

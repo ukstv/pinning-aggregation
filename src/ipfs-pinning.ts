@@ -1,8 +1,7 @@
-import { IPinning } from "./pinning.interface";
+import { CidList, IPinning, PinningInfo } from "./pinning.interface";
 import { Ipfs } from "ipfs";
 import { IContext } from "./context.interface";
 import CID from "cids";
-import { CidList } from "./cid-list";
 import * as sha256 from "@stablelib/sha256";
 import * as base64 from "@stablelib/base64";
 
@@ -102,5 +101,9 @@ export class IpfsPinning implements IPinning {
     } else {
       return {};
     }
+  }
+
+  async info(): Promise<PinningInfo> {
+    return { [this.id]: {} };
   }
 }

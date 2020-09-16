@@ -4,10 +4,9 @@ import {
 } from "./pinning-aggregation";
 import { IpfsPinning } from "./ipfs-pinning";
 import { PowergatePinning } from "./powergate-pinning";
-import { IPinning } from "./pinning.interface";
+import {CidList, IPinning, PinningInfo} from "./pinning.interface";
 import CID from "cids";
 import { IContext } from "./context.interface";
-import { CidList } from "./cid-list";
 const cid = new CID("QmSnuWmxptJZdLJpKRarxBMS2Ju2oANVrgbr2xWbie9b2D");
 
 const context = ({
@@ -48,6 +47,14 @@ class FakePinning implements IPinning {
     return {
       [cid.toString()]: [this.id],
     };
+  }
+
+  async info(): Promise<PinningInfo> {
+    return {
+      [this.id]: {
+        connectionString: this.connectionString
+      }
+    }
   }
 }
 
@@ -245,4 +252,23 @@ test("#id", async () => {
   expect(aggregation.id).toEqual(
     "pinning-aggregation@MrsSJQiu_jyU4eUHlnStwE1_xiyF7aEz8OljvySd4Tk="
   );
+});
+
+describe("#info", () => {
+  test("return random info", async () => {
+    const aggregation = await PinningAggregation.build(
+      context,
+      doubleFakeConnectionStrings,
+      [FakePinning]
+    );
+    const info = await aggregation.info()
+    expect(info).toEqual({
+      [aggregation.backends[0].id]: {
+        connectionString: doubleFakeConnectionStrings[0]
+      },
+      [aggregation.backends[1].id]: {
+        connectionString: doubleFakeConnectionStrings[1]
+      }
+    })
+  });
 });

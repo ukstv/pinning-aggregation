@@ -141,3 +141,12 @@ test("#id", async () => {
   const id = pinning.id;
   expect(id).toEqual("ipfs@dJMq1GF1IvnI_iPY2Jfi-Pv-s_X81uwK6ghrmOltLoE=");
 });
+
+test("#info", async () => {
+  const context = ({} as unknown) as IContext;
+  const pinning = new IpfsPinning("ipfs://__context", context);
+  const info = await pinning.info();
+  expect(info).toEqual({
+    "ipfs@dJMq1GF1IvnI_iPY2Jfi-Pv-s_X81uwK6ghrmOltLoE=": {},
+  });
+});

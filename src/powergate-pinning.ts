@@ -1,9 +1,9 @@
 import type { ffsTypes, Pow } from "@textile/powergate-client";
 import CID from "cids";
-import { IPinning } from "./pinning.interface";
-import { CidList } from "./cid-list";
+import { CidList, IPinning, PinningInfo } from "./pinning.interface";
 import * as sha256 from "@stablelib/sha256";
 import * as base64 from "@stablelib/base64";
+import * as _ from "lodash";
 
 export class EmptyTokenError extends Error {
   constructor(address: string) {
@@ -164,5 +164,18 @@ export class PowergatePinning implements IPinning {
     } else {
       return {};
     }
+  }
+
+  async info(): Promise<PinningInfo> {
+    let info: any = {};
+    if (this.#pow) {
+      const { info: ffsInfo } = await this.#pow.ffs.info();
+      if (ffsInfo) {
+        info = _.omit(ffsInfo, "pinsList");
+      }
+    }
+    return {
+      [this.id]: info,
+    };
   }
 }
