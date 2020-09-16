@@ -1,4 +1,6 @@
 dependencies:
+  '@stablelib/base64': 1.0.0
+  '@stablelib/sha256': 1.0.0
   cids: 1.0.0
   lodash: 4.17.20
 devDependencies:
@@ -529,6 +531,36 @@ packages:
     dev: true
     resolution:
       integrity: sha512-MZPUxrmFubI36XS1DI3qmI0YdN1gks62JtFZvxR67ljjSNCeK6U08Zx4msEWOXuofgqUt6zPHSi1H9fbjR/NRA==
+  /@stablelib/base64/1.0.0:
+    dev: false
+    resolution:
+      integrity: sha512-s/wTc/3+vYSalh4gfayJrupzhT7SDBqNtiYOeEMlkSDqL/8cExh5FAeTzLpmYq+7BLLv36EjBL5xrb0bUHWJWQ==
+  /@stablelib/binary/1.0.0:
+    dependencies:
+      '@stablelib/int': 1.0.0
+    dev: false
+    resolution:
+      integrity: sha512-W01QhOw1tWL51Du1c5JZphJs7toRbfra1C2DBlhT0mRHZWGWB1hpFbqiZUFY7QNIMUpmmHLrlZs3YsSCB/giUg==
+  /@stablelib/hash/1.0.0:
+    dev: false
+    resolution:
+      integrity: sha512-wBvSIIx4Y8799BRD4TBhezS1P9+irGAKdsNgbZMeU5ndMbw7BtZALdCm0FcJIRFxJ2giPLPS9YCgrwWAhzSRLQ==
+  /@stablelib/int/1.0.0:
+    dev: false
+    resolution:
+      integrity: sha512-MRigEQCO7xM93nZqW4CbIBjhANGw3jJxGVSUZH3PQ6HWL1IGrFWVDBzIclWxl4l5aRRpqoM+76ellQNdUJPnsA==
+  /@stablelib/sha256/1.0.0:
+    dependencies:
+      '@stablelib/binary': 1.0.0
+      '@stablelib/hash': 1.0.0
+      '@stablelib/wipe': 1.0.0
+    dev: false
+    resolution:
+      integrity: sha512-+IEzCXO6HSyYWV+5TqdFjcUYgkebdiadzRtMXJg6ia68WQm2xHpABl5t0vVdtvgTlw7matBRhImunAHUFIAEUg==
+  /@stablelib/wipe/1.0.0:
+    dev: false
+    resolution:
+      integrity: sha512-0Fd4MQCbEh8OFSO+gG7wBXok7yRC3w+xe/wWM8KNye7EGoHr4BTFZNWV/1xAn2r8/gyFKxPXT8uxXRzDzGq6rg==
   /@textile/grpc-powergate-client/0.4.0:
     dependencies:
       '@improbable-eng/grpc-web': 0.13.0_google-protobuf@3.13.0
@@ -4679,6 +4711,8 @@ packages:
     resolution:
       integrity: sha512-Ux4ygGWsu2c7isFWe8Yu1YluJmqVhxqK2cLXNQA5AcC3QfbGNpM7fu0Y8b/z16pXLnFxZYvWhd3fhBY9DLmC6Q==
 specifiers:
+  '@stablelib/base64': ^1.0.0
+  '@stablelib/sha256': ^1.0.0
   '@textile/powergate-client': ^1.0.0
   '@types/jest': ^26.0.10
   '@types/lodash': ^4.14.159

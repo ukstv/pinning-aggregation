@@ -123,15 +123,21 @@ describe("#ls", () => {
     await pinning.open();
     const result = await pinning.ls();
     cids.forEach((cid) => {
-      expect(result[cid.toString()]).toEqual([IpfsPinning.designator]);
+      expect(result[cid.toString()]).toEqual([pinning.id]);
     });
   });
 
   test("return empty array if no ipfs", async () => {
-    const context = ({
-    } as unknown) as IContext;
+    const context = ({} as unknown) as IContext;
     const pinning = new IpfsPinning("ipfs://__context", context);
     const result = await pinning.ls();
-    expect(result).toEqual({})
+    expect(result).toEqual({});
   });
+});
+
+test("#id", async () => {
+  const context = ({} as unknown) as IContext;
+  const pinning = new IpfsPinning("ipfs://__context", context);
+  const id = pinning.id;
+  expect(id).toEqual("ipfs@dJMq1GF1IvnI_iPY2Jfi-Pv-s_X81uwK6ghrmOltLoE=");
 });

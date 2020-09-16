@@ -3,6 +3,8 @@ import { Ipfs } from "ipfs";
 import { IContext } from "./context.interface";
 import CID from "cids";
 import { CidList } from "./cid-list";
+import * as sha256 from "@stablelib/sha256";
+import * as base64 from "@stablelib/base64";
 
 const FROM_CONTEXT_HOST = "__context";
 
@@ -11,6 +13,8 @@ export class NoIpfsInstanceError extends Error {
     super("No IPFS instance available");
   }
 }
+
+const textEncoder = new TextEncoder();
 
 /**
  * Pin document to a IPFS node.
@@ -25,6 +29,7 @@ export class IpfsPinning implements IPinning {
   static designator = "ipfs";
 
   readonly ipfsAddress: string;
+  readonly id: string;
 
   readonly #context: IContext;
   #ipfs: Ipfs | undefined;
@@ -36,7 +41,7 @@ export class IpfsPinning implements IPinning {
     return new IpfsPinning(connectionString, context);
   }
 
-  constructor(connectionString: string, context: IContext) {
+  constructor(readonly connectionString: string, context: IContext) {
     const url = new URL(connectionString);
     const ipfsHost = url.hostname;
     const ipfsPort = parseInt(url.port, 10) || 5001;
@@ -50,6 +55,10 @@ export class IpfsPinning implements IPinning {
       this.ipfsAddress = `${protocol}://${ipfsHost}:${ipfsPort}`;
     }
     this.#context = context;
+
+    const bytes = textEncoder.encode(this.connectionString);
+    const digest = base64.encodeURLSafe(sha256.hash(bytes));
+    this.id = `${IpfsPinning.designator}@${digest}`;
   }
 
   get ipfs() {
@@ -85,13 +94,13 @@ export class IpfsPinning implements IPinning {
   async ls(): Promise<CidList> {
     const iterable = this.#ipfs?.pin.ls();
     if (iterable) {
-      let result: CidList = {}
+      let result: CidList = {};
       for await (let r of iterable) {
-        result[r.cid.toString()] = [IpfsPinning.designator]
+        result[r.cid.toString()] = [this.id];
       }
-      return result
+      return result;
     } else {
-      return {}
+      return {};
     }
   }
 }

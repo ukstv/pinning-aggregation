@@ -35,6 +35,8 @@
     "ipfs-http-client": "^46.0.0"
   },
   "dependencies": {
+    "@stablelib/base64": "^1.0.0",
+    "@stablelib/sha256": "^1.0.0",
     "cids": "^1.0.0",
     "lodash": "^4.17.20"
   }

@@ -196,7 +196,7 @@ describe("#ls", () => {
     });
     const result = await pinning.ls();
     cids.forEach((cid) => {
-      expect(result[cid.toString()]).toEqual([PowergatePinning.designator]);
+      expect(result[cid.toString()]).toEqual([pinning.id]);
     });
   });
 
@@ -217,4 +217,10 @@ describe("#ls", () => {
     const result = await pinning.ls();
     expect(result).toEqual({});
   });
+});
+
+test("#id", async () => {
+  const pinning = new PowergatePinning(connectionString, pow);
+  const id = pinning.id;
+  expect(id).toEqual("powergate@1jv3pY_D2aj8gdbDeg-GHSlIB1aBg1bGB0yQBpNYOaA=");
 });

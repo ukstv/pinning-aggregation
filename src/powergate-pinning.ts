@@ -2,6 +2,8 @@ import type { ffsTypes, Pow } from "@textile/powergate-client";
 import CID from "cids";
 import { IPinning } from "./pinning.interface";
 import { CidList } from "./cid-list";
+import * as sha256 from "@stablelib/sha256";
+import * as base64 from "@stablelib/base64";
 
 export class EmptyTokenError extends Error {
   constructor(address: string) {
@@ -18,11 +20,14 @@ export enum JobStatus {
   JOB_STATUS_SUCCESS = 5,
 }
 
+const textEncoder = new TextEncoder();
+
 export class PowergatePinning implements IPinning {
   static designator = "powergate";
 
   readonly endpoint: string;
   readonly token: string;
+  readonly id: string;
 
   #textile: typeof import("@textile/powergate-client");
   #pow?: Pow;
@@ -33,10 +38,10 @@ export class PowergatePinning implements IPinning {
   }
 
   constructor(
-    connectionString: string,
-    textlile: typeof import("@textile/powergate-client")
+    readonly connectionString: string,
+    textile: typeof import("@textile/powergate-client")
   ) {
-    this.#textile = textlile;
+    this.#textile = textile;
     const url = new URL(connectionString);
     const hostname = url.hostname;
     const port = parseInt(url.port, 10) || 6002;
@@ -50,6 +55,10 @@ export class PowergatePinning implements IPinning {
       throw new EmptyTokenError(this.endpoint);
     }
     this.token = token;
+
+    const bytes = textEncoder.encode(this.connectionString);
+    const digest = base64.encodeURLSafe(sha256.hash(bytes));
+    this.id = `${PowergatePinning.designator}@${digest}`;
   }
 
   get pow() {
@@ -146,7 +155,7 @@ export class PowergatePinning implements IPinning {
         const cids = info.pinsList;
         let result: CidList = {};
         cids.forEach((cid) => {
-          result[cid] = [PowergatePinning.designator];
+          result[cid] = [this.id];
         });
         return result;
       } else {
