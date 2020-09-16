@@ -46,7 +46,7 @@ class FakePinning implements IPinning {
 
   async ls(): Promise<CidList> {
     return {
-      [cid.toString()]: [this.connectionString],
+      [cid.toString()]: [this.id],
     };
   }
 }
@@ -231,7 +231,8 @@ describe("#ls", () => {
       [FakePinning]
     );
     const result = await aggregation.ls();
-    expect(result[cid.toString()]).toEqual(doubleFakeConnectionStrings);
+    const ids = aggregation.backends.map((b) => b.id);
+    expect(result[cid.toString()]).toEqual(ids);
   });
 });
 
@@ -241,5 +242,7 @@ test("#id", async () => {
     doubleFakeConnectionStrings,
     [FakePinning]
   );
-  expect(aggregation.id).toEqual("pinning-aggregation@MrsSJQiu_jyU4eUHlnStwE1_xiyF7aEz8OljvySd4Tk=");
+  expect(aggregation.id).toEqual(
+    "pinning-aggregation@MrsSJQiu_jyU4eUHlnStwE1_xiyF7aEz8OljvySd4Tk="
+  );
 });
