@@ -9,8 +9,8 @@
   ],
   "scripts": {
     "test": "jest",
-    "clean": "rm -rf lib/ && rm -rf coverage/",
-    "build": "./node_modules/.bin/tsc -p ."
+    "clean": "rimraf lib/ && rimraf coverage/",
+    "build": "pnpm run clean && ./node_modules/.bin/tsc -p ."
   },
   "author": "Sergey Ukustov <sergey@ukstv.me>",
   "license": "Apache-2.0",
@@ -19,13 +19,15 @@
     "pnpm": ">=5.4"
   },
   "devDependencies": {
-    "@textile/powergate-client": "^0.2.0",
+    "@textile/powergate-client": "^1.0.0",
     "@types/jest": "^26.0.10",
     "@types/lodash": "^4.14.159",
     "ipfs-http-client": "^46.0.0",
     "jest": "^26.4.0",
     "prettier": "^2.0.5",
+    "rimraf": "^3.0.2",
     "ts-jest": "^26.2.0",
+    "ts-node": "^9.0.0",
     "typescript": "^3.9.7"
   },
   "peerDependencies": {

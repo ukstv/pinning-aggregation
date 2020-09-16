@@ -41,9 +41,6 @@ const mockPow = {
 
 beforeEach(() => {
   jest.spyOn<any, any>(pow, "createPow").mockImplementation(() => mockPow);
-  jest
-    .spyOn<any, any>(pow.ffsOptions, "withStorageConfig")
-    .mockImplementation((any) => any);
   mockPow.ffs.remove.mockClear();
   mockPow.ffs.watchJobs = watchJobs;
   mockPow.ffs.pushStorageConfig = pushStorageConfig;
@@ -52,7 +49,7 @@ beforeEach(() => {
 describe("constructor", () => {
   test("set Powergate endpoint from powergate:// URL", () => {
     const pinning = new PowergatePinning(connectionString, pow);
-    expect(pinning.endpoint).toEqual("http://example.com:5002");
+    expect(pinning.endpoint).toEqual("http://example.com:6002");
     expect(pinning.token).toEqual(token);
   });
   test("set Powergate endpoint from powergate+http:// URL", () => {
@@ -66,7 +63,7 @@ describe("constructor", () => {
     const pinning = new PowergatePinning(
       `powergate+https://example.com?token=${token}`, pow
     );
-    expect(pinning.endpoint).toEqual("https://example.com:5002");
+    expect(pinning.endpoint).toEqual("https://example.com:6002");
     expect(pinning.token).toEqual(token);
   });
   test("require token", () => {
@@ -92,7 +89,6 @@ describe("#pin", () => {
     await pinning.open();
     const cid = new CID("QmSnuWmxptJZdLJpKRarxBMS2Ju2oANVrgbr2xWbie9b2D");
     await pinning.pin(cid);
-    expect(mockPow.ffs.defaultStorageConfig).toBeCalled();
     expect(mockPow.ffs.pushStorageConfig).toBeCalledWith(
       cid.toString(),
       expect.anything()
@@ -107,7 +103,6 @@ describe("#pin", () => {
       throw new Error("cid already pinned, consider using override flag");
     });
     await expect(pinning.pin(cid)).resolves.toBeUndefined();
-    expect(mockPow.ffs.defaultStorageConfig).toBeCalled();
     expect(mockPow.ffs.pushStorageConfig).toBeCalledWith(
       cid.toString(),
       expect.anything()
@@ -116,9 +111,6 @@ describe("#pin", () => {
 
   test("throw if not double pinning", async () => {
     jest.spyOn<any, any>(pow, "createPow").mockImplementation(() => mockPow);
-    jest
-      .spyOn<any, any>(pow.ffsOptions, "withStorageConfig")
-      .mockImplementation((any) => any);
     const pinning = new PowergatePinning(connectionString, pow);
     await pinning.open();
     const cid = new CID("QmSnuWmxptJZdLJpKRarxBMS2Ju2oANVrgbr2xWbie9b2D");
@@ -126,7 +118,6 @@ describe("#pin", () => {
       throw new Error("something wrong");
     });
     await expect(pinning.pin(cid)).rejects.toThrow("something wrong");
-    expect(mockPow.ffs.defaultStorageConfig).toBeCalled();
     expect(mockPow.ffs.pushStorageConfig).toBeCalledWith(
       cid.toString(),
       expect.anything()

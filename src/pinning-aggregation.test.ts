@@ -69,7 +69,7 @@ describe("constructor", () => {
 
     expect(aggregation.backends[3]).toBeInstanceOf(PowergatePinning);
     const three = aggregation.backends[3] as PowergatePinning;
-    expect(three.endpoint).toEqual("https://example.com:5002");
+    expect(three.endpoint).toEqual("https://example.com:6002");
     expect(three.token).toEqual(token);
   });
 

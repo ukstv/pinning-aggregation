@@ -1,4 +1,4 @@
-import type { ffsTypes } from "@textile/powergate-client";
+import type { ffsTypes, Pow } from "@textile/powergate-client";
 import CID from "cids";
 import { IPinning } from "./pinning.interface";
 
@@ -24,7 +24,7 @@ export class PowergatePinning implements IPinning {
   readonly token: string;
 
   #textile: typeof import("@textile/powergate-client");
-  #pow: any;
+  #pow?: Pow;
 
   static async build(connectionString: string): Promise<PowergatePinning> {
     const textile = await import("@textile/powergate-client");
@@ -38,7 +38,7 @@ export class PowergatePinning implements IPinning {
     this.#textile = textlile;
     const url = new URL(connectionString);
     const hostname = url.hostname;
-    const port = parseInt(url.port, 10) || 5002;
+    const port = parseInt(url.port, 10) || 6002;
     const token = url.searchParams.get("token");
     const protocol = url.protocol
       .replace("powergate:", "http")
@@ -65,72 +65,71 @@ export class PowergatePinning implements IPinning {
   }
 
   async pin(cid: CID): Promise<void> {
-    try {
-      const defaultConfig = await this.#pow.ffs.defaultStorageConfig();
-      await this.#pow.ffs.pushStorageConfig(
-        cid.toString(),
-        this.#textile.ffsOptions.withStorageConfig(defaultConfig)
-      );
-    } catch (e) {
-      if (
-        e.message.includes("cid already pinned, consider using override flag")
-      ) {
-        // Do Nothing
-      } else {
-        throw e;
+    if (this.#pow) {
+      try {
+        await this.#pow.ffs.pushStorageConfig(cid.toString(), { override: true });
+      } catch (e) {
+        if (
+          e.message.includes("cid already pinned, consider using override flag")
+        ) {
+          // Do Nothing
+        } else {
+          throw e;
+        }
       }
     }
   }
 
   async unpin(cid: CID): Promise<void> {
-    const { config } = await this.#pow.ffs.getStorageConfig(cid.toString());
-    const next = Object.assign({}, config, {
-      config: {
-        ...config,
-        repairable: false,
-        hot: {
-          ...config.hot,
-          allowUnfreeze: false,
-          enabled: false,
-        },
-        cold: {
-          ...config.cold,
-          enabled: false,
-        },
-      },
-    });
-    const opts = [
-      this.#textile.ffsOptions.withOverride(true),
-      this.#textile.ffsOptions.withStorageConfig(next),
-    ];
-    const { jobId } = await this.#pow.ffs.pushStorageConfig(
-      cid.toString(),
-      ...opts
-    );
-    await this.waitForJobStatus(jobId, JobStatus.JOB_STATUS_SUCCESS);
-    await this.#pow.ffs.remove(cid.toString());
+    if (this.#pow) {
+      const { config } = await this.#pow.ffs.getStorageConfig(cid.toString());
+      if (config) {
+        const next = Object.assign({}, config, {
+          ...config,
+          repairable: false,
+          hot: {
+            ...config.hot,
+            allowUnfreeze: false,
+            enabled: false,
+          },
+          cold: {
+            ...config.cold,
+            enabled: false,
+          },
+        });
+        const { jobId } = await this.#pow.ffs.pushStorageConfig(cid.toString(), {
+          override: true,
+          storageConfig: next,
+        });
+        await this.waitForJobStatus(jobId, JobStatus.JOB_STATUS_SUCCESS);
+        await this.#pow.ffs.remove(cid.toString());
+      }
+    }
   }
 
-  protected waitForJobStatus(
+  protected async waitForJobStatus(
     jobId: string,
     status: ffsTypes.JobStatusMap[keyof ffsTypes.JobStatusMap]
   ): Promise<void> {
-    return new Promise<void>((resolve, reject) => {
-      const cancel = this.#pow.ffs.watchJobs((job: any) => {
-        if (job.errCause && job.errCause.length > 0) {
-          reject(new Error(job.errCause));
-        }
-        if (job.status === JobStatus.JOB_STATUS_CANCELED) {
-          reject(new Error("job canceled"));
-        }
-        if (job.status === JobStatus.JOB_STATUS_FAILED) {
-          reject(new Error("job failed"));
-        }
-        if (job.status === status) {
-          cancel();
-          resolve();
-        }
-      }, jobId);
-    });
+    if (this.#pow) {
+      const pow = this.#pow
+      return new Promise<void>((resolve, reject) => {
+        const cancel = pow.ffs.watchJobs((job: any) => {
+          if (job.errCause && job.errCause.length > 0) {
+            reject(new Error(job.errCause));
+          }
+          if (job.status === JobStatus.JOB_STATUS_CANCELED) {
+            reject(new Error("job canceled"));
+          }
+          if (job.status === JobStatus.JOB_STATUS_FAILED) {
+            reject(new Error("job failed"));
+          }
+          if (job.status === status) {
+            cancel();
+            resolve();
+          }
+        }, jobId);
+      });
+    }
   }
 }

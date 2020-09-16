@@ -1,11 +1,79 @@
-declare module 'ipfs' {
-  import { EventEmitter } from "events";
+declare module "ipfs" {
+  import CID from "cids";
+
   export function create(options: any): Ipfs;
   export function create(): Ipfs;
 
   type Callback<T> = (error: Error, result?: T) => void;
 
-  export class Ipfs extends EventEmitter {
+  export type SubscriptionMessage = {
+    from: string;
+    data: Buffer;
+    seqno: Buffer;
+    topicIDs: string[];
+  };
+
+  export interface PubSub {
+    ls(options?: { timeout: number; signal: string }): Promise<string[]>;
+    subscribe(
+      topic: string,
+      handler: (message: any) => void,
+      options?: any
+    ): Promise<void>;
+    unsubscribe(topic: string, handler: (message: any) => void): Promise<void>;
+    publish(topic: string, content: string): Promise<void>;
+  }
+
+  export type PinAddRmOptions = {
+    recursive?: boolean;
+    timeout?: number;
+    signal?: AbortSignal;
+  };
+
+  export type PinAddAllSource = AsyncIterable<{
+    cid: CID;
+    path: String;
+    recursive: Boolean;
+    comments: String;
+  }>;
+
+  export type PinAddAllOptions = {
+    timeout?: number;
+    signal?: AbortSignal;
+  };
+
+  export type PinLsOptions = {
+    paths: CID | CID[] | string | string[];
+    type?: string;
+    timeout?: number;
+    signal: AbortSignal;
+  };
+
+  export type PinRmAllOptions = {
+    timeout?: number;
+    signal?: AbortSignal;
+  };
+
+  export type PinLsType = "recursive" | "direct" | "indirect"
+
+  export interface PinApi {
+    add(cid: CID | string, options?: PinAddRmOptions): Promise<CID[]>;
+    addAll(
+      source: PinAddAllSource,
+      options?: PinAddAllOptions
+    ): AsyncIterable<CID>;
+    ls(options?: PinLsOptions): AsyncIterable<{ cid: CID; type: PinLsType }>;
+    rm(ipfsPath: CID | string, options?: PinAddRmOptions): Promise<CID>;
+    rmAll(
+      source:
+        | CID
+        | string
+        | AsyncIterable<{ cid: CID; path: String; recursive: Boolean }>,
+      options?: PinRmAllOptions
+    ): Promise<AsyncIterable<CID>>;
+  }
+
+  export class Ipfs {
     constructor(options: any);
 
     types: Ipfs.Types;
@@ -18,14 +86,17 @@ declare module 'ipfs' {
     stop(callback?: (error?: Error) => void): void;
     isOnline(): boolean;
 
-    version(options: any, callback: (error: Error, version: Ipfs.Version) => void): void ;
+    version(
+      options: any,
+      callback: (error: Error, version: Ipfs.Version) => void
+    ): void;
     version(options: any): Promise<Ipfs.Version>;
-    version(callback: (error: Error, version: Ipfs.Version) => void): void ;
+    version(callback: (error: Error, version: Ipfs.Version) => void): void;
     version(): Promise<Ipfs.Version>;
 
-    id(options: any, callback: (error: Error, version: Ipfs.Id) => void): void ;
+    id(options: any, callback: (error: Error, version: Ipfs.Id) => void): void;
     id(options: any): Promise<Ipfs.Id>;
-    id(callback: (error: Error, version: Ipfs.Id) => void): void ;
+    id(callback: (error: Error, version: Ipfs.Id) => void): void;
     id(): Promise<Ipfs.Id>;
 
     repo: Ipfs.RepoAPI;
@@ -42,26 +113,42 @@ declare module 'ipfs' {
     ping(callback: (error: Error) => void): void;
     ping(): Promise<void>;
 
-    pubsub: any;
+    pubsub: PubSub;
     dht: any;
-    pin: any;
+    pin: PinApi;
 
     // Top level Files API
-    add(data: Ipfs.FileContent, options: any, callback: Callback<Ipfs.IpfsFile[]>): void;
+    add(
+      data: Ipfs.FileContent,
+      options: any,
+      callback: Callback<Ipfs.IpfsFile[]>
+    ): void;
     add(data: Ipfs.FileContent, options: any): Promise<Ipfs.IpfsFile[]>;
     add(data: Ipfs.FileContent, callback: Callback<Ipfs.IpfsFile[]>): void;
     add(data: Ipfs.FileContent): Promise<Ipfs.IpfsFile[]>;
 
-    addFromStream(stream: any, options?: any): Promise<Ipfs.IpfsFile[]>
+    addFromStream(stream: any, options?: any): Promise<Ipfs.IpfsFile[]>;
     addFromStream(stream: any, callback: Callback<Ipfs.IpfsFile[]>): void;
-    addFromStream(stream: any, options: any, callback: Callback<Ipfs.IpfsFile[]>): void;
+    addFromStream(
+      stream: any,
+      options: any,
+      callback: Callback<Ipfs.IpfsFile[]>
+    ): void;
 
-    addFromUrl(url: string, options: any, callback: Callback<Ipfs.IpfsFile[]>): void;
+    addFromUrl(
+      url: string,
+      options: any,
+      callback: Callback<Ipfs.IpfsFile[]>
+    ): void;
     addFromUrl(url: string, options: any): Promise<Ipfs.IpfsFile[]>;
     addFromUrl(url: string, callback: Callback<Ipfs.IpfsFile[]>): void;
     addFromUrl(url: string): Promise<Ipfs.IpfsFile[]>;
 
-    addFromFs(path: string, options: any, callback: Callback<Ipfs.IpfsFile[]>): void;
+    addFromFs(
+      path: string,
+      options: any,
+      callback: Callback<Ipfs.IpfsFile[]>
+    ): void;
     addFromFs(path: string, options: any): Promise<Ipfs.IpfsFile[]>;
     addFromFs(path: string, callback: Callback<Ipfs.IpfsFile[]>): void;
     addFromFs(path: string): Promise<Ipfs.IpfsFile[]>;
@@ -70,7 +157,11 @@ declare module 'ipfs' {
     addReadableStream(options?: any): any;
 
     cat(hash: Ipfs.Multihash, callback: Callback<Ipfs.FileContent>): void;
-    cat(hash: Ipfs.Multihash, options: any, callback: Callback<Ipfs.FileContent>): void;
+    cat(
+      hash: Ipfs.Multihash,
+      options: any,
+      callback: Callback<Ipfs.FileContent>
+    ): void;
     cat(hash: Ipfs.Multihash, options?: any): Promise<Ipfs.FileContent>;
     catPullStream(hash: Ipfs.Multihash, options?: any): any;
     catReadableStream(hash: Ipfs.Multihash, options?: any): any;
@@ -86,7 +177,6 @@ declare module 'ipfs' {
   }
 
   namespace Ipfs {
-
     export interface Options {
       init?: boolean;
       start?: boolean;
@@ -155,7 +245,7 @@ declare module 'ipfs' {
       size: number;
       name: string;
       depth: number;
-      type: 'file' | 'dir' | string;
+      type: "file" | "dir" | string;
     }
 
     export interface FilesAPI {
@@ -238,29 +328,77 @@ declare module 'ipfs' {
     }
 
     export interface ObjectPatchAPI {
-      addLink(multihash: Multihash, link: DAGLink, options: GetObjectOptions, callback: Callback<any>): void;
-      addLink(multihash: Multihash, link: DAGLink, options: GetObjectOptions): Promise<any>;
-      addLink(multihash: Multihash, link: DAGLink, callback: Callback<any>): void;
+      addLink(
+        multihash: Multihash,
+        link: DAGLink,
+        options: GetObjectOptions,
+        callback: Callback<any>
+      ): void;
+      addLink(
+        multihash: Multihash,
+        link: DAGLink,
+        options: GetObjectOptions
+      ): Promise<any>;
+      addLink(
+        multihash: Multihash,
+        link: DAGLink,
+        callback: Callback<any>
+      ): void;
       addLink(multihash: Multihash, link: DAGLink): Promise<any>;
 
-      rmLink(multihash: Multihash, linkRef: DAGLinkRef, options: GetObjectOptions, callback: Callback<any>): void;
-      rmLink(multihash: Multihash, linkRef: DAGLinkRef, options: GetObjectOptions): Promise<any>;
-      rmLink(multihash: Multihash, linkRef: DAGLinkRef, callback: Callback<any>): void;
+      rmLink(
+        multihash: Multihash,
+        linkRef: DAGLinkRef,
+        options: GetObjectOptions,
+        callback: Callback<any>
+      ): void;
+      rmLink(
+        multihash: Multihash,
+        linkRef: DAGLinkRef,
+        options: GetObjectOptions
+      ): Promise<any>;
+      rmLink(
+        multihash: Multihash,
+        linkRef: DAGLinkRef,
+        callback: Callback<any>
+      ): void;
       rmLink(multihash: Multihash, linkRef: DAGLinkRef): Promise<any>;
 
-      appendData(multihash: Multihash, data: any, options: GetObjectOptions, callback: Callback<any>): void;
-      appendData(multihash: Multihash, data: any, options: GetObjectOptions): Promise<any>;
-      appendData(multihash: Multihash, data: any, callback: Callback<any>): void;
+      appendData(
+        multihash: Multihash,
+        data: any,
+        options: GetObjectOptions,
+        callback: Callback<any>
+      ): void;
+      appendData(
+        multihash: Multihash,
+        data: any,
+        options: GetObjectOptions
+      ): Promise<any>;
+      appendData(
+        multihash: Multihash,
+        data: any,
+        callback: Callback<any>
+      ): void;
       appendData(multihash: Multihash, data: any): Promise<any>;
 
-      setData(multihash: Multihash, data: any, options: GetObjectOptions, callback: Callback<any>): void;
-      setData(multihash: Multihash, data: any, options: GetObjectOptions): Promise<any>;
+      setData(
+        multihash: Multihash,
+        data: any,
+        options: GetObjectOptions,
+        callback: Callback<any>
+      ): void;
+      setData(
+        multihash: Multihash,
+        data: any,
+        options: GetObjectOptions
+      ): Promise<any>;
       setData(multihash: Multihash, data: any, callback: Callback<any>): void;
       setData(multihash: Multihash, data: any): Promise<any>;
     }
 
     export interface ObjectAPI {
-      "new"(template: 'unixfs-dir', callback: Callback<DAGNode>): void;
+      "new"(template: "unixfs-dir", callback: Callback<DAGNode>): void;
       "new"(callback: Callback<DAGNode>): void;
       "new"(): Promise<DAGNode>;
 
@@ -269,23 +407,45 @@ declare module 'ipfs' {
       put(obj: Obj, callback: Callback<any>): void;
       put(obj: Obj): Promise<any>;
 
-      get(multihash: Multihash, options: GetObjectOptions, callback: Callback<any>): void;
+      get(
+        multihash: Multihash,
+        options: GetObjectOptions,
+        callback: Callback<any>
+      ): void;
       get(multihash: Multihash, options: GetObjectOptions): Promise<any>;
       get(multihash: Multihash, callback: Callback<any>): void;
       get(multihash: Multihash): Promise<any>;
 
-      data(multihash: Multihash, options: GetObjectOptions, callback: Callback<any>): void;
+      data(
+        multihash: Multihash,
+        options: GetObjectOptions,
+        callback: Callback<any>
+      ): void;
       data(multihash: Multihash, options: GetObjectOptions): Promise<any>;
       data(multihash: Multihash, callback: Callback<any>): void;
       data(multihash: Multihash): Promise<any>;
 
-      links(multihash: Multihash, options: GetObjectOptions, callback: Callback<DAGLink[]>): void;
-      links(multihash: Multihash, options: GetObjectOptions): Promise<DAGLink[]>;
+      links(
+        multihash: Multihash,
+        options: GetObjectOptions,
+        callback: Callback<DAGLink[]>
+      ): void;
+      links(
+        multihash: Multihash,
+        options: GetObjectOptions
+      ): Promise<DAGLink[]>;
       links(multihash: Multihash, callback: Callback<DAGLink[]>): void;
       links(multihash: Multihash): Promise<DAGLink[]>;
 
-      stat(multihash: Multihash, options: GetObjectOptions, callback: Callback<ObjectStat>): void;
-      stat(multihash: Multihash, options: GetObjectOptions): Promise<ObjectStat>;
+      stat(
+        multihash: Multihash,
+        options: GetObjectOptions,
+        callback: Callback<ObjectStat>
+      ): void;
+      stat(
+        multihash: Multihash,
+        options: GetObjectOptions
+      ): Promise<ObjectStat>;
       stat(multihash: Multihash, callback: Callback<ObjectStat>): void;
       stat(multihash: Multihash): Promise<ObjectStat>;
 
@@ -294,17 +454,27 @@ declare module 'ipfs' {
 
     export interface DagAPI {
       put(dagNode: any, options: any, callback: Callback<any>): void;
-      put(dagNode: any, options: any): Promise<any>;
-      put(dagNode: any): Promise<any>;
+      put(dagNode: any, options: any): Promise<CID>;
+      put(dagNode: any): Promise<CID>;
 
-      get(cid: string | CID, path: string, options: any, callback: Callback<any>): void;
+      get(
+        cid: string | CID,
+        path: string,
+        options: any,
+        callback: Callback<any>
+      ): void;
       get(cid: string | CID, path: string, options: any): Promise<any>;
       get(cid: string | CID, path: string, callback: Callback<any>): void;
-      get(cid: string | CID, path: string): Promise<any>;
+      get(cid: string | CID, path?: string): Promise<any>;
       get(cid: string | CID, callback: Callback<any>): void;
       get(cid: string | CID): Promise<any>;
 
-      tree(cid: string | CID, path: string, options: any, callback: Callback<any>): void;
+      tree(
+        cid: string | CID,
+        path: string,
+        options: any,
+        callback: Callback<any>
+      ): void;
       tree(cid: string | CID, path: string, options: any): Promise<any>;
       tree(cid: string | CID, path: string, callback: Callback<any>): void;
       tree(cid: string | CID, path: string): Promise<any>;
