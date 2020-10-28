@@ -1,7 +1,7 @@
 import ipfsClient from "ipfs-http-client";
 import CID from "cids";
-import { IpfsPinning, NoIpfsInstanceError } from "./ipfs-pinning";
-import { IContext } from "./context.interface";
+import { IpfsPinning, NoIpfsInstanceError } from "../ipfs-pinning";
+import { IContext } from "@pinning-aggregation/common";
 import { asyncIterableFromArray } from "./async-iterable-from-array.util";
 
 jest.mock("ipfs-http-client");

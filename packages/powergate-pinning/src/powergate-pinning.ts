@@ -1,6 +1,6 @@
-import type { ffsTypes, Pow } from "@textile/powergate-client";
+import { createPow, Pow, ffsTypes } from "@textile/powergate-client";
 import CID from "cids";
-import { CidList, IPinning, PinningInfo } from "./pinning.interface";
+import { CidList, IPinning, PinningInfo } from "@pinning-aggregation/common";
 import * as sha256 from "@stablelib/sha256";
 import * as base64 from "@stablelib/base64";
 import * as _ from "lodash";
@@ -29,19 +29,15 @@ export class PowergatePinning implements IPinning {
   readonly token: string;
   readonly id: string;
 
-  #textile: typeof import("@textile/powergate-client");
   #pow?: Pow;
 
   static async build(connectionString: string): Promise<PowergatePinning> {
-    const textile = await import("@textile/powergate-client");
-    return new PowergatePinning(connectionString, textile);
+    return new PowergatePinning(connectionString);
   }
 
   constructor(
     readonly connectionString: string,
-    textile: typeof import("@textile/powergate-client")
   ) {
-    this.#textile = textile;
     const url = new URL(connectionString);
     const hostname = url.hostname;
     const port = parseInt(url.port, 10) || 6002;
@@ -66,7 +62,7 @@ export class PowergatePinning implements IPinning {
   }
 
   async open(): Promise<void> {
-    this.#pow = this.#textile.createPow({ host: this.endpoint });
+    this.#pow = createPow({ host: this.endpoint });
     this.#pow.setToken(this.token);
   }
 

@@ -1,5 +1,9 @@
-import CID from "cids";
-import { IContext } from "./context.interface";
+import type { Ipfs } from "ipfs";
+import type CID from "cids";
+
+export interface IContext {
+  ipfs?: Ipfs;
+}
 
 export interface IPinning {
   id: string;

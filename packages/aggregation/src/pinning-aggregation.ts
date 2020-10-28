@@ -1,14 +1,12 @@
-import { IpfsPinning } from "./ipfs-pinning";
 import _ from "lodash";
-import { PowergatePinning } from "./powergate-pinning";
 import CID from "cids";
 import {
   CidList,
   IPinning,
   IPinningStatic,
   PinningInfo,
-} from "./pinning.interface";
-import { IContext } from "./context.interface";
+  IContext
+} from "@pinning-aggregation/common";
 import * as base64 from "@stablelib/base64";
 import * as sha256 from "@stablelib/sha256";
 
@@ -30,7 +28,7 @@ export class PinningAggregation implements IPinning {
   static async build(
     context: IContext,
     connectionStrings: string[],
-    pinners: Array<IPinningStatic> = [IpfsPinning, PowergatePinning]
+    pinners: Array<IPinningStatic> = []
   ) {
     const backendsP = connectionStrings.map((s) => {
       const protocol = new URL(s).protocol.replace(":", "");
@@ -81,9 +79,9 @@ export class PinningAggregation implements IPinning {
   }
 
   /**
-   * Unpin the document.
+   * Unpin CID.
    * Async semantics: individual call failures do not propagate upstream; anything goes.
-   * @param docId
+   * @param cid
    */
   async unpin(cid: CID): Promise<void> {
     Promise.all(this.backends.map(async (service) => service.unpin(cid))).catch(

@@ -1,12 +1,17 @@
 import {
   PinningAggregation,
   UnknownPinningService,
-} from "./pinning-aggregation";
-import { IpfsPinning } from "./ipfs-pinning";
-import { PowergatePinning } from "./powergate-pinning";
-import {CidList, IPinning, PinningInfo} from "./pinning.interface";
+} from "../pinning-aggregation";
+import {
+  CidList,
+  IPinning,
+  PinningInfo,
+  IContext,
+} from "@pinning-aggregation/common";
 import CID from "cids";
-import { IContext } from "./context.interface";
+import { IpfsPinning } from "@pinning-aggregation/ipfs-pinning";
+import { PowergatePinning } from "@pinning-aggregation/powergate-pinning";
+
 const cid = new CID("QmSnuWmxptJZdLJpKRarxBMS2Ju2oANVrgbr2xWbie9b2D");
 
 const context = ({
@@ -52,9 +57,9 @@ class FakePinning implements IPinning {
   async info(): Promise<PinningInfo> {
     return {
       [this.id]: {
-        connectionString: this.connectionString
-      }
-    }
+        connectionString: this.connectionString,
+      },
+    };
   }
 }
 
@@ -68,7 +73,8 @@ describe("constructor", () => {
     ];
     const aggregation = await PinningAggregation.build(
       context,
-      connectionStrings
+      connectionStrings,
+      [IpfsPinning, PowergatePinning]
     );
     expect(aggregation.backends.length).toEqual(4);
 
@@ -261,14 +267,14 @@ describe("#info", () => {
       doubleFakeConnectionStrings,
       [FakePinning]
     );
-    const info = await aggregation.info()
+    const info = await aggregation.info();
     expect(info).toEqual({
       [aggregation.backends[0].id]: {
-        connectionString: doubleFakeConnectionStrings[0]
+        connectionString: doubleFakeConnectionStrings[0],
       },
       [aggregation.backends[1].id]: {
-        connectionString: doubleFakeConnectionStrings[1]
-      }
-    })
+        connectionString: doubleFakeConnectionStrings[1],
+      },
+    });
   });
 });

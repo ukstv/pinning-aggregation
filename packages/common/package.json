@@ -1,0 +1,19 @@
+{
+  "name": "@pinning-aggregation/common",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist/"
+  ],
+  "author": {
+    "name": "Sergey Ukustov",
+    "email": "sergey@ukstv.me"
+  },
+  "scripts": {
+    "build": "tsc --project tsconfig.json"
+  },
+  "devDependencies": {},
+  "dependencies": {
+    "cids": "^1.0.2"
+  }
+}

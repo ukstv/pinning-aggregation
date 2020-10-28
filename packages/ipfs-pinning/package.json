@@ -1,0 +1,25 @@
+{
+  "name": "@pinning-aggregation/ipfs-pinning",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist/"
+  ],
+  "author": {
+    "name": "Sergey Ukustov",
+    "email": "sergey@ukstv.me"
+  },
+  "scripts": {
+    "build": "tsc --project tsconfig.json",
+    "test": "jest"
+  },
+  "dependencies": {
+    "@pinning-aggregation/common": "workspace:*",
+    "@stablelib/base64": "^1.0.0",
+    "@stablelib/sha256": "^1.0.0"
+  },
+  "devDependencies": {
+    "cids": "^1.0.2",
+    "ipfs-http-client": "^47.0.1"
+  }
+}

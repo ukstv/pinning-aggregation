@@ -1,6 +1,6 @@
 # IPFS Pinning Aggregation
 
-This package provides a way to aggregate multiple pinning services, like they are one.
+This suite provides a way to aggregate multiple pinning services, like they are one.
 It includes vanilla IPFS node pinning, as well as pinning to Filecoin via Powergate.
 
 ## Context and problem statement
@@ -25,9 +25,9 @@ Every pinning backend is expected to provide these functions:
 
 Having multiple pinning backends simultaneously leads to distributed transactions, if done thoroughly. We have following expectations:
 
-- 90% of the time, only one pinning backend is used,
+- 90% of the time, one only uses one pinning backend,
 - pinning is an idempotent operation,
-- if multiple pinning backends are used simultaneously, the node _must_ `pin` on all the backends, yet it treats `unpin` operation on best effort basis.
+- if one uses multiple pinning backends simultaneously, the node _must_ `pin` on all the backends, yet it treats `unpin` operation on best effort basis.
 
 Thus, instead of distributed transactions, we can use light-weight Promises.
 
@@ -38,7 +38,7 @@ Based on the semantics, it makes sense to have:
 1. pure pinning backends - responsible for pinning records,
 2. pinning backends aggregator - responsible for pinning records using multiple pinning backends simultaneously,
 
-To add a new pinning backend, one should add one more class implementing `IPinning` interface, that conforms to `IPinningStatic`, and add it to a list of available backends.
+To add a new pinning backend, one should create class implementing `IPinning` interface, that conforms to `IPinningStatic`, and add it to a list of available backends.
 
 ## Configuration
 
@@ -49,7 +49,6 @@ We want to achieve common way of configuring different pinning backends, that sh
 Connection string is formed as valid URL, for example:
 
 ```
-ipfs://localhost:5001
 ipfs+https://example.com:3342
 powergate+http://example.com:4001
 ```
@@ -57,17 +56,19 @@ powergate+http://example.com:4001
 Every pinning backend is assigned a unique string that we call _designator_ below. `PinningAggregation` gets a protocol component of connection strings passed, gets the first part of it before an optional plus (`+`) symbol, and treats it as a designator for a backend.
 For the examples above, designator searched is `ipfs`. Rest of the connection string is parsed by particular backend.
 
-**IPFS.** Connection string looks like `ipfs://<host>:<port>` or `ipfs+http://<host>:<port>` or `ipfs+https://<host>:<port>`. It is translated into `http://<host>:<port>`, `http://<host>:<port>`, `https://<host>:<port>` correspondingly.
+**IPFS.** Connection string looks like `ipfs+http://<host>:<port>` or `ipfs+https://<host>:<port>`. It is translated into `http://<host>:<port>`, `https://<host>:<port>` correspondingly.
 Here there is a special hostname `__context` used, which commands the pinning backend to use IPFS connection provided in `IContext`.
 
-**Powergate.** Powergate requires token for authentication purposes. We pass it as a query param. Connection string looks like `powergate://<host>:<port>?token=<token>`, `powergate+http://<host>:<port>?token=<token>` or `powergate+https://<host>:<port>?token=<token>`. It is translated into `http://<host>:<port>`, `http://<host>:<port>`, `https://<host>:<port>` correspondingly, and set the token passed.
+**Powergate.** Powergate requires token for authentication purposes. We pass it as a query param. Connection string looks like `powergate+http://<host>:<port>?token=<token>` or `powergate+https://<host>:<port>?token=<token>`. It is translated into `http://<host>:<port>`, `https://<host>:<port>` correspondingly, and set the token passed.
 
 ## Usage
 
-First, add the package as a dependency:
+First, decide what pinning backends you intend to use, then add the packages as a dependency:
 
 ```
-npm add pinning-aggregation
+pnpm add @pinning-aggregation/aggregation
+pnpm add @pinning-aggregation/ipfs-pinning // For IPFS backend
+pnpm add @pinning-aggregation/powergate-pinning // For Powergate backend
 ```
 
 Then instantiate `PinningAggregation`. We anticipate some applications already having IPFS connection, so we provide it in a context parameter.
@@ -75,14 +76,16 @@ Then instantiate `PinningAggregation`. We anticipate some applications already h
 ```typescript
 import {
   PinningAggregation,
-  IpfsPinning,
-  PowergatePinning,
-} from "pinning-aggregation";
+  UnknownPinningService,
+} from "@pinning-aggregation/aggregation";
+import { IpfsPinning } from "@pinning-aggregation/ipfs-pinning";
+import { PowergatePinning } from "@pinning-aggregation/powergate-pinning";
+
 const context = {
   ipfs: EXISTING_IPFS_CONNECTION, // May be null or undefined
 };
 const pinning = await PinningAggregation.build(context, [
-  "ipfs://__context",
+  "ipfs+context",
   "ipfs+https://example.com:3342",
   "powergate+http://example.com:4001?token=something-special",
   [IpfsPinning, PowergatePinning],
@@ -97,10 +100,6 @@ This would use 3 pinning instances:
 - vanilla IPFS provided in `context` variable,
 - vanilla IPFS located at `https://example.com:3342`,
 - Powergate located at `http://example.com:4001`, with authentication token `something-special`.
-
-The module uses dynamic imports (`await import`) to reduce size of a resulting application bundle.
-So, if you are going to use remote ipfs, make sure to add `ipfs-http-client` as a dependency _to your application_.
-If you are going to use Powergate pinning, add `@textile/powergate-client` as well.
 
 ### Ancillary methods
 

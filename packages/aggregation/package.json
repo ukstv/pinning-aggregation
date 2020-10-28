@@ -1,0 +1,28 @@
+{
+  "name": "@pinning-aggregation/aggregation",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist/"
+  ],
+  "author": {
+    "name": "Sergey Ukustov",
+    "email": "sergey@ukstv.me"
+  },
+  "scripts": {
+    "build": "tsc --project tsconfig.json",
+    "test": "jest"
+  },
+  "dependencies": {
+    "@pinning-aggregation/common": "workspace:*",
+    "@stablelib/base64": "^1.0.0",
+    "@stablelib/sha256": "^1.0.0",
+    "lodash": "^4.17.20"
+  },
+  "devDependencies": {
+    "@types/lodash": "^4.14.162",
+    "cids": "^1.0.2",
+    "@pinning-aggregation/ipfs-pinning": "workspace:*",
+    "@pinning-aggregation/powergate-pinning": "workspace:*"
+  }
+}

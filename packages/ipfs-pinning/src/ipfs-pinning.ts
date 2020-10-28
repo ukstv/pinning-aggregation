@@ -1,7 +1,11 @@
-import { CidList, IPinning, PinningInfo } from "./pinning.interface";
-import { Ipfs } from "ipfs";
-import { IContext } from "./context.interface";
-import CID from "cids";
+import type {
+  CidList,
+  IPinning,
+  PinningInfo,
+  IContext,
+} from "@pinning-aggregation/common";
+import type { Ipfs } from "ipfs";
+import type CID from "cids";
 import * as sha256 from "@stablelib/sha256";
 import * as base64 from "@stablelib/base64";
 
