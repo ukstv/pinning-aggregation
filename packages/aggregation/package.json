@@ -10,6 +10,7 @@
     "email": "sergey@ukstv.me"
   },
   "scripts": {
+    "clean": "rimraf dist/",
     "build": "tsc --project tsconfig.json",
     "test": "jest"
   },

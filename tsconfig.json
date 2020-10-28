@@ -22,5 +22,6 @@
     "skipLibCheck": true,
     "checkJs": false,
     "typeRoots": ["types/", "node_modules/@types/"]
-  }
+  },
+  "exclude": ["**/*.spec.ts", "**/*.test.ts", "**/dist/"]
 }

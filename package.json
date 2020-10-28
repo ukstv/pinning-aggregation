@@ -5,7 +5,9 @@
   "description": "Use multiple pinning services like they are one",
   "scripts": {
     "test": "jest",
-    "build": "pnpm build --recursive"
+    "preinstall": "npx only-allow pnpm",
+    "build": "pnpm run build --recursive",
+    "clean": "pnpm run clean --recursive"
   },
   "author": "Sergey Ukustov <sergey@ukstv.me>",
   "license": "(MIT OR Apache-2.0)",
@@ -21,7 +23,5 @@
     "ts-jest": "^26.4.3",
     "ts-node": "^9.0.0",
     "typescript": "^4.0.5"
-  },
-  "peerDependencies": {},
-  "dependencies": {}
+  }
 }

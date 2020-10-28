@@ -10,9 +10,9 @@
     "email": "sergey@ukstv.me"
   },
   "scripts": {
+    "clean": "rimraf dist/",
     "build": "tsc --project tsconfig.json"
   },
-  "devDependencies": {},
   "dependencies": {
     "cids": "^1.0.2"
   }
