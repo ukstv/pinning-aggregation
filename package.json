@@ -1,7 +1,7 @@
 {
   "name": "@pinning-aggregation/mono",
   "private": true,
-  "version": "1.0.0",
+  "version": "0.0.1",
   "description": "Use multiple pinning services like they are one",
   "scripts": {
     "test": "jest",
@@ -16,6 +16,7 @@
     "pnpm": ">=5.4"
   },
   "devDependencies": {
+    "@changesets/cli": "^2.11.1",
     "@types/jest": "^26.0.15",
     "jest": "^26.6.1",
     "prettier": "^2.1.2",
