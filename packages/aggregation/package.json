@@ -22,9 +22,9 @@
     "lodash": "^4.17.20"
   },
   "devDependencies": {
-    "@types/lodash": "^4.14.162",
-    "cids": "^1.0.2",
     "@pinning-aggregation/ipfs-pinning": "workspace:*",
-    "@pinning-aggregation/powergate-pinning": "workspace:*"
+    "@pinning-aggregation/powergate-pinning": "workspace:*",
+    "@types/lodash": "^4.14.162",
+    "cids": "^1.0.2"
   }
 }
