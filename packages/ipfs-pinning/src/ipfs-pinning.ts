@@ -37,13 +37,6 @@ export class IpfsPinning implements IPinning {
   readonly #context: IContext;
   #ipfs: Ipfs | undefined;
 
-  static async build(
-    connectionString: string,
-    context: IContext
-  ): Promise<IpfsPinning> {
-    return new IpfsPinning(connectionString, context);
-  }
-
   constructor(readonly connectionString: string, context: IContext) {
     const url = new URL(connectionString);
     const ipfsHost = url.hostname;

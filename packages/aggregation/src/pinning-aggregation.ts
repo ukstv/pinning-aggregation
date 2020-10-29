@@ -5,7 +5,7 @@ import {
   IPinning,
   IPinningStatic,
   PinningInfo,
-  IContext
+  IContext,
 } from "@pinning-aggregation/common";
 import * as base64 from "@stablelib/base64";
 import * as sha256 from "@stablelib/sha256";
@@ -25,23 +25,22 @@ export class PinningAggregation implements IPinning {
   readonly id: string;
   readonly backends: IPinning[];
 
-  static async build(
+  static build(
     context: IContext,
     connectionStrings: string[],
     pinners: Array<IPinningStatic> = []
   ) {
-    const backendsP = connectionStrings.map((s) => {
+    const backends = connectionStrings.map<IPinning>((s) => {
       const protocol = new URL(s).protocol.replace(":", "");
       const match = protocol.match(/^(\w+)\+?/);
       const designator = match ? match[1] : null;
       const found = pinners.find((pinner) => pinner.designator === designator);
       if (found) {
-        return found.build(s, context);
+        return new found(s, context);
       } else {
         throw new UnknownPinningService(designator);
       }
     });
-    const backends = await Promise.all(backendsP);
     return new PinningAggregation(backends);
   }
 

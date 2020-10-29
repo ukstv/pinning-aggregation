@@ -31,10 +31,6 @@ export class PowergatePinning implements IPinning {
 
   #pow?: Pow;
 
-  static async build(connectionString: string): Promise<PowergatePinning> {
-    return new PowergatePinning(connectionString);
-  }
-
   constructor(
     readonly connectionString: string,
   ) {
