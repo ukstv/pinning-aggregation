@@ -17,7 +17,7 @@ export interface IPinning {
 
 export interface IPinningStatic {
   designator: string;
-  build(connectionString: string, context: IContext): Promise<IPinning>;
+  new (connectionString: string, context: IContext): IPinning;
 }
 
 export type CidString = string;
